@@ -1,163 +1,119 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
 import RPi.GPIO as GPIO
-import time
-import signal
+from pushbullet import Pushbullet
 import sys
-import httplib, urllib #for Push Notifications
-
-#config.txt included in .gitignore first line is the token, the second line is the key
-config = open('config.txt').readlines()
-pushover_token=config[0].rstrip()
-pushover_user=config[1]
+import time
+import argparse
+import ConfigParser
 
 
-#Setting up Board GPIO Pins
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(35,GPIO.OUT)
-GPIO.setup(37,GPIO.OUT)
-GPIO.setup(33,GPIO.IN)#Locked
-GPIO.setup(31,GPIO.IN)#Open
+def init_gpio():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(config.getint('gpio', 'top_sensor_pin'), GPIO.IN)
+    GPIO.setup(config.getint('gpio', 'bottom_sensor_pin'), GPIO.IN)
+    GPIO.setup(config.getint('gpio', 'motor_a_pin'), GPIO.OUT)
+    GPIO.setup(config.getint('gpio', 'motor_b_pin'), GPIO.OUT)
 
-#Clean kill of script function (Stops Motor, cleans GPIO)
-def Safe_Kill():
-        print 'Performing safe shutoff!'
-        GPIO.output(37,False)
-        GPIO.output(35,False)
-        GPIO.cleanup()
-        sys.exit('Motors shutdown, GPIO cleaned')
 
-def PushOver(message):
-    conn = httplib.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json",
-      urllib.urlencode({
-	  #I know, I know no keys in source control. Sheesh.
-          #The old keys no longer work
-        "token": pushover_token,
-        "user": pushover_user,
-        "message": message,
-      }), { "Content-type": "application/x-www-form-urlencoded" })
-    conn.getresponse()
+def motor_off():
+    GPIO.output(config.getint('gpio', 'motor_a_pin'), False)
+    GPIO.output(config.getint('gpio', 'motor_b_pin'), False)
 
-#Argument controller
-if len(sys.argv)>3: #Tests if you've entered too many arguments
-    print "You've entered too many arguments!"
-    print "Exiting program..."
-    sys.exit(0)
 
-if len(sys.argv)>2: #Argument for door action time
+def motor_up():
+    GPIO.output(config.getint('gpio', 'motor_a_pin'), True)
+    GPIO.output(config.getint('gpio', 'motor_b_pin'), False)
+
+
+def motor_down():
+    GPIO.output(config.getint('gpio', 'motor_a_pin'), False)
+    GPIO.output(config.getint('gpio', 'motor_b_pin'), True)
+
+
+def get_door_state():
+    top_sensor = GPIO.input(config.getint('gpio', 'top_sensor_pin'))
+    bottom_sensor = GPIO.input(config.getint('gpio', 'bottom_sensor_pin'))
+
+    if top_sensor == 1 and bottom_sensor == 1:
+        state = 'unknown'
+    elif top_sensor == 0:
+        state = 'opened'
+    elif bottom_sensor == 0:
+        state = 'closed'
+    else:
+        state = 'fubar'
+    return state
+
+
+def move_door(direction):
+    safety_limit = config.getint('chickendoor', 'safety_limit')
+    door_state = get_door_state()
+    print 'door state is %s, going to %s door' % (door_state, direction)
+    run_time = 0
+    start_time = time.clock()
+    if direction == 'open':
+        while door_state != 'opened' and run_time < safety_limit:
+            motor_up()
+            door_state = get_door_state()
+            run_time = time.clock() - start_time
+    elif direction == 'close':
+        while door_state != 'closed' and run_time < safety_limit:
+            motor_down()
+            door_state = get_door_state()
+            run_time = time.clock() - start_time
+    motor_off()
+    return_msg = 'The door is now %s |%ss|' % (door_state, run_time)
+    print return_msg
+    return return_msg
+
+
+def send_notification(api_key, message):
+    pb = Pushbullet(api_key)
+    pb.push_note('Chicken Door', message)
+
+
+if __name__ == '__main__':
+    description = ('Script to open and close a rpi chicken door')
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('--direction', dest='direction',
+                        choices=['open', 'close', 'auto'],
+                        help='open, close, or auto')
+    parser.add_argument('--silent', dest='silent', action='store_true',
+                        help='Will disable the sending of notifications')
+    args, __ = parser.parse_known_args()
+
+    config = ConfigParser.ConfigParser()
+    config.read('gpio.cfg')
+    api_key = config.get('pushbullet', 'api_key')
+
+    status = 0
     try:
-        float(sys.argv[2])
+        init_gpio()
+        if args.direction in ('open', 'close'):
+            resp = move_door(args.direction)
+        elif args.direction == 'auto':
+            door_state = get_door_state()
+            if door_state == 'opened':
+                resp = move_door('close')
+            elif door_state == 'closed':
+                resp = move_door('open')
+            else:
+                resp = "Did not move door. Door state is %s" % door_state
+        else:
+            door_state = get_door_state()
+            print 'door is %s |%ss|' % door_state
+
+        if not args.silent:
+            send_notification(api_key, resp)
+
     except:
-        print 'Error: ',str(sys.argv[2]),' is not a number!'
-        print "Exiting program..."
-        sys.exit(0)
-    if int(sys.argv[2])>45: #Checks that a time longer than 45s isn't entered
-            print 'Please choose a time less than 45s'
-            print "Exiting program..."
-            sys.exit(0)
+        status = 69
+        if not args.silent:
+            send_notification(api_key, "Exception encountered")
+        print "BOOM:", sys.exc_info()
 
-if len(sys.argv)>1: #Argument for door action
-    if sys.argv[1]!='close' and sys.argv[1]!='open':
-            print 'Please choose "open" or "close"'
-            print "Exiting program..."
-            sys.exit(0)
-
-if len(sys.argv)==3:
-    print 'Forcing door to',str(sys.argv[1]),'for',str(sys.argv[2]),'seconds'
-    Door_Action=sys.argv[1]
-    Door_Time=int(sys.argv[2])
-if len(sys.argv)==2:
-    print 'Forcing door to ',str(sys.argv[1])
-    Door_Action=sys.argv[1]
-    Door_Time=45 #This is a safety time
-if len(sys.argv)==1:
-    Door_Action='default' #Will reverse door state
-    Door_Time=45 #This is a safety time
- 
-#Start door!
-#def DoorControl():
-TimeStart=time.clock()
-runTime=0
-#Check door status from Magnets
-BottomHall=GPIO.input(31)
-TopHall=GPIO.input(33)
-if BottomHall==0:print 'Door is locked'
-if TopHall==0:print 'Door is open'
-if BottomHall==1:print 'No magnet sensed on lock'
-if TopHall==1:print 'No magnet sensed top'
-if Door_Action=='open': #Door is locked
-		print 'The door is locked!'
-		print 'The door is going up!'
-		while TopHall==1 and runTime<Door_Time:
-				GPIO.output(35,True)
-				GPIO.output(37,False)
-				TopHall=GPIO.input(33)
-				runTime=time.clock()-TimeStart
-		if 45==runTime:
-				print 'Something went wrong, go check the door!'
-				message = 'Coop open FAILED!'
-				PushOver(message)
-				Safe_Kill()
-		if TopHall==0:
-				print 'Door is open!'
-				message = 'Coop opened successfully!'
-				PushOver(message)
-				Safe_Kill()
-elif Door_Action=='close': #Door is open
-		print 'The door is open!'
-		print 'The door is going down!'
-		while BottomHall==1 and runTime<Door_Time:
-				GPIO.output(35,False)
-				GPIO.output(37,True)
-				BottomHall=GPIO.input(31)
-				runTime=time.clock()-TimeStart
-		if 45==runTime:
-				print 'Something went wrong, go check the door!'
-				message = "Coop close FAILED!"
-				PushOver(message)
-				Safe_Kill()
-		if BottomHall==0:
-				time.sleep(1)
-				print 'Door is locked!'
-				message = "Coop closed successfully!"
-				PushOver(message)
-				Safe_Kill()
-elif BottomHall==0: #Door is locked
-		print 'The door is locked!'
-		print 'The door is going up!'
-		while TopHall==1 and runTime<Door_Time:
-				GPIO.output(35,True)
-				GPIO.output(37,False)
-				TopHall=GPIO.input(33)
-				runTime=time.clock()-TimeStart
-		if 45==runTime:
-				print 'Something went wrong, go check the door!'
-				message = "Coop open FAILED!"
-				PushOver(message)
-				Safe_Kill()
-		if TopHall==0:
-				print 'Door is open!'
-				message = "Coop opened successfully!"
-				PushOver(message)
-				Safe_Kill()
-elif TopHall==0: #Door is open
-		print 'The door is open!'
-		print 'The door is going down!'
-		while BottomHall==1 and runTime<Door_Time:
-				GPIO.output(35,False)
-				GPIO.output(37,True)
-				BottomHall=GPIO.input(31)
-				runTime=time.clock()-TimeStart
-		if 45==runTime:
-				print 'Something went wrong, go check the door!'
-				message = "Coop close FAILED!"
-				PushOver(message)
-				Safe_Kill()
-		if BottomHall==0:
-				print 'Door is locked!'
-				message = "Coop closed successfully!"
-				PushOver(message)
-				Safe_Kill()
-runTime=time.clock()-TimeStart
-print 'Total Time: '+str(runTime)
-Safe_Kill()
+    GPIO.cleanup()
+    sys.exit(status)
