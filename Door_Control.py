@@ -48,10 +48,11 @@ def get_door_state():
     return state
 
 
-def move_door(direction):
-    safety_limit = config.getint('chickendoor', 'safety_limit')
+def move_door(direction, safetly_limit, debug):
     door_state = get_door_state()
-    print 'door state is %s, going to %s door' % (door_state, direction)
+    if debug:
+         print 'Door is %s, going to %s the coop.' % (door_state, direction)
+
     run_time = 0
     start_time = time.clock()
     if direction == 'open':
@@ -65,8 +66,8 @@ def move_door(direction):
             door_state = get_door_state()
             run_time = time.clock() - start_time
     motor_off()
-    return_msg = 'The door is now %s |%ss|' % (door_state, run_time)
-    print return_msg
+
+    return_msg = 'The coop is now %s |%.2fs|' % (door_state, run_time)
     return return_msg
 
 
@@ -81,37 +82,43 @@ if __name__ == '__main__':
     parser.add_argument('--direction', dest='direction',
                         choices=['open', 'close', 'auto'],
                         help='open, close, or auto')
-    parser.add_argument('--silent', dest='silent', action='store_true',
-                        help='Will disable the sending of notifications')
+    parser.add_argument('--debug', dest='debug', action='store_true',
+                        help='Print Stdout and disable notifications')
     args, __ = parser.parse_known_args()
 
     config = ConfigParser.ConfigParser()
-    config.read('gpio.cfg')
+    config.read('chicken_door.cfg')
     api_key = config.get('pushbullet', 'api_key')
+    safety_limit = config.getint('chickendoor', 'safety_limit')
 
     status = 0
     try:
         init_gpio()
         if args.direction in ('open', 'close'):
-            resp = move_door(args.direction)
+            resp = move_door(args.direction, safety_limit, args.debug)
         elif args.direction == 'auto':
             door_state = get_door_state()
+            if door_state == 'unknown':
+                for x in range(1000):
+                    door_state = get_door_state()
             if door_state == 'opened':
-                resp = move_door('close')
+                resp = move_door('close', safety_limit, args.debug)
             elif door_state == 'closed':
-                resp = move_door('open')
+                resp = move_door('open', safety_limit, args.debug)
             else:
                 resp = "Did not move door. Door state is %s" % door_state
         else:
             door_state = get_door_state()
-            print 'door is %s |%ss|' % door_state
+            resp = 'The door is now %s' % door_state
 
-        if not args.silent:
+        if args.debug:
+            print resp
+        if not args.debug:
             send_notification(api_key, resp)
 
     except:
         status = 69
-        if not args.silent:
+        if not args.debug:
             send_notification(api_key, "Exception encountered")
         print "BOOM:", sys.exc_info()
 
