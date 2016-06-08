@@ -73,7 +73,9 @@ def move_door(direction, safetly_limit, debug):
 
 def send_notification(api_key, message):
     pb = Pushbullet(api_key)
-    pb.push_note('Chicken Door', message)
+    my_channel = pb.channels[0]
+    push = my_channel.push_note('Chicken Door', message)
+    #pb.push_note('Chicken Door', message)
 
 
 if __name__ == '__main__':
@@ -109,10 +111,9 @@ if __name__ == '__main__':
                 resp = "Did not move door. Door state is %s" % door_state
         else:
             door_state = get_door_state()
-            resp = 'The door is now %s' % door_state
+            resp = 'The door is %s' % door_state
 
-        if args.debug:
-            print resp
+        print resp
         if not args.debug:
             send_notification(api_key, resp)
 
