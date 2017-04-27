@@ -99,4 +99,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-chicken_door.cfg
+
+# Configs and secrets
+robocoop.cfg
+ansible/inventory
+ansible/bootstrap.retry

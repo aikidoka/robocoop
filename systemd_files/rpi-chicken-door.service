@@ -1,7 +1,0 @@
-[Unit]
-Description=rpi-chicken-door
-
-[Service]
-Type=simple
-ExecStart=/usr/bin/python2 /opt/rpi-chicken-door/Door_Control.py --direction auto
-WorkingDirectory=/opt/rpi-chicken-door
