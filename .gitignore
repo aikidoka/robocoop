@@ -102,5 +102,4 @@ $RECYCLE.BIN/
 
 # Configs and secrets
 robocoop.cfg
-ansible/inventory
 ansible/bootstrap.retry

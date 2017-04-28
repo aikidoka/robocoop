@@ -1,0 +1,2 @@
+[robocoop]
+localhost   ansible_connection=local
