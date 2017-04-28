@@ -1,0 +1,11 @@
+---
+- name: Install and configure the system
+  hosts: all
+  become: yes
+  become_method: sudo
+  roles:
+    - robocoop
+  tasks:
+    - name: Copy over vault file to host
+      copy: src=group_vars/robocoop/vault
+            dest={{ install_dir }}/ansible/group_vars/vault

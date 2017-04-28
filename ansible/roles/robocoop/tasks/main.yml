@@ -1,0 +1,81 @@
+---
+- name: Ensure basic packages are there
+  pacman: name={{ item }}
+          state=latest
+          update_cache=yes
+  with_items:
+    - gcc
+    - git
+    - ansible
+
+- name: Ensure needed python libraries are installed
+  pip: name={{ item }}
+       state=latest
+       executable=pip2
+       extra_args='--exists-action=w'
+  with_items:
+    - pushbullet.py
+    - RPi.GPIO
+    - httplib2
+
+- name: Pull down the repo
+  git: repo=https://github.com/beardymcbeards/robocoop.git
+       dest={{ install_dir }}
+
+- name: Instantiate the config
+  template: src=robocoop.cfg.j2
+            dest={{ install_dir }}/robocoop.cfg
+
+- name: Modify the motd for a happier wife
+  template: src=motd.j2
+            dest=/etc/motd
+
+- name: Install bash aliases
+  template: src=chicken-door-aliases.sh.j2
+            dest=/etc/profile.d/chicken-door-aliases.sh
+
+- name: Create robocoop service
+  template: src=robocoop.service.j2
+            dest=/etc/systemd/system/robocoop.service
+
+- name: Create auto-update service
+  template: src=robocoop-update.service.j2
+            dest=/etc/systemd/system/robocoop-update.service
+
+- name: Gather sun phases
+  uri: url=http://api.wunderground.com/api/{{ wunderground_api_key }}/astronomy/q/{{ zipcode }}.json
+       return_content=yes
+  register: sun_phases
+  tags: timers
+
+- name: Generate morning timer
+  template: src=robocoop-morning.timer.j2
+            dest=/etc/systemd/system/robocoop-morning.timer
+  notify: reload systemd
+  tags: timers
+
+- name: Generate evening timer
+  template: src=robocoop-evening.timer.j2
+            dest=/etc/systemd/system/robocoop-evening.timer
+  notify: reload systemd
+  tags: timers
+
+- name: Generate update timer
+  template: src=robocoop-update.timer.j2
+            dest=/etc/systemd/system/robocoop-update.timer
+  notify: reload systemd
+
+- meta: flush_handlers
+  tags: timers
+
+- name: Enable the timers
+  systemd: name={{ item }}
+           enabled=yes
+           state=started
+  with_items:
+      - robocoop-morning.timer
+      - robocoop-evening.timer
+      - robocoop-update.timer
+  tags: timers
+
+            

@@ -1,0 +1,4 @@
+---
+# I keep this encrypted with ansible-vault
+vault_wunderground_api_key: blah
+vault_pb_api_key: blah

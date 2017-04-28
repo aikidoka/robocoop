@@ -1,0 +1,20 @@
+---    
+install_dir: /opt/robocoop
+
+# Maximum time to run the door for in seconds
+safety_limit: 45
+
+# GPIO Settings
+gpio_top_sensor_pin: 31
+gpio_bottom_sensor_pin: 33
+gpio_motor_a_pin: 35
+gpio_motor_b_pin: 37
+
+# Where to pull the sun times for and potential adjustments 
+zipcode: 78163
+morning_nudge_minutes: 20
+evening_nudge_minutes: 30
+
+# API Keys stored in ansible-vault secured vault.yml
+wunderground_api_key: "{{ vault_wunderground_api_key }}"
+pb_api_key: "{{ vault_pb_api_key }}"

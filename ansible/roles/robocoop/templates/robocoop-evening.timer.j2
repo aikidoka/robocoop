@@ -1,0 +1,14 @@
+[Unit]
+Description=Runs the robocoop script
+
+[Timer]
+{% if sun_phases['json']['sun_phase']['sunset']['minute']|int < (60 - evening_nudge_minutes) %}
+OnCalendar=*-*-* {{ sun_phases['json']['sun_phase']['sunset']['hour'] }}:{{ sun_phases['json']['sun_phase']['sunset']['minute']|int + evening_nudge_minutes }}:00
+{% else %}
+OnCalendar=*-*-* {{ sun_phases['json']['sun_phase']['sunset']['hour']|int + 1 }}:{{ sun_phases['json']['sun_phase']['sunset']['minute']|int - 60 + evening_nudge_minutes }}:00
+{% endif %}
+Persistent=true
+Unit=robocoop.service
+
+[Install]
+WantedBy=multi-user.target

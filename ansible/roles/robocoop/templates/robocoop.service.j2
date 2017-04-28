@@ -1,0 +1,7 @@
+[Unit]
+Description=RoboCoop
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python2 {{ install_dir }}/robocoop.py --direction auto
+WorkingDirectory={{ install_dir }}

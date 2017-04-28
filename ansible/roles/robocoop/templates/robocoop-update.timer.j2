@@ -1,0 +1,10 @@
+[Unit]
+Description=Executes the robocoop update service
+
+[Timer]
+OnCalendar=Sun *-*-* 00:00:00
+Persistent=true
+Unit=robocoop-update.service
+
+[Install]
+WantedBy=multi-user.target
