@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
@@ -13,14 +13,16 @@ from pushbullet import Pushbullet
 class robocoop:
     """Class for controlling a door"""
 
-    def __init__(self, door_name, top_pin, bottom_pin, motor_a_pin, motor_b_pin, safety_limit):
+    def __init__(self, door_name, top_pin, bottom_pin, motor_a_pin, motor_b_pin, safety_limit, debug=False):
         self.name = door_name
         self.top_sensor_pin = top_pin
         self.bottom_sensor_pin = bottom_pin
         self.motor_a_pin = motor_a_pin
         self.motor_b_pin = motor_b_pin
         self.safety_limit = safety_limit
+        self.debug = debug
         self.door_state = 'NULL'
+        self.init_gpio()
 
 
     def init_gpio(self):
@@ -29,6 +31,10 @@ class robocoop:
         GPIO.setup(self.bottom_sensor_pin, GPIO.IN)
         GPIO.setup(self.motor_a_pin, GPIO.OUT)
         GPIO.setup(self.motor_b_pin, GPIO.OUT)
+
+
+    def cleanup(self):
+        GPIO.cleanup()
 
 
     def motor_off(self):
@@ -63,7 +69,7 @@ class robocoop:
 
     def move_door(self, direction):
         self.get_door_state()
-        if debug:
+        if self.debug:
             print('Coop %s is %s, going to %s the coop.' % (self.name, self.door_state, direction))
 
         run_time = 0
@@ -123,7 +129,6 @@ if __name__ == '__main__':
             except:
                 print('No config found for door: %s' % door)
 
-            obj.init_gpio()
             if args.direction in ('open', 'close'):
                 resp = obj.move_door(args.direction, args.debug)
             elif args.direction == 'auto':
@@ -149,8 +154,8 @@ if __name__ == '__main__':
             status = 69
             if not args.debug:
                 send_notification(api_key, "Exception encountered")
-
+            print("BOOM:", sys.exc_info())
         finally:
-            GPIO.cleanup()
+            obj.cleanup()
 
     sys.exit(status)
