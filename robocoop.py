@@ -10,10 +10,12 @@ import ConfigParser
 import RPi.GPIO as GPIO
 from pushbullet import Pushbullet
 
+
 class robocoop:
     """Class for controlling a door"""
 
-    def __init__(self, door_name, top_pin, bottom_pin, motor_a_pin, motor_b_pin, safety_limit, debug=False):
+    def __init__(self, door_name, top_pin, bottom_pin, motor_a_pin,
+                 motor_b_pin, safety_limit, debug=False):
         self.name = door_name
         self.top_sensor_pin = top_pin
         self.bottom_sensor_pin = bottom_pin
@@ -42,6 +44,15 @@ class robocoop:
         GPIO.output(self.motor_b_pin, False)
 
 
+    def motor_move(self, direction):
+        if direction == 'open':
+            GPIO.output(self.motor_a_pin, True)
+            GPIO.output(self.motor_b_pin, False)
+        elif direction == 'close':
+            GPIO.output(self.motor_a_pin, False)
+            GPIO.output(self.motor_b_pin, True)
+
+
     def motor_up(self):
         GPIO.output(self.motor_a_pin, True)
         GPIO.output(self.motor_b_pin, False)
@@ -58,9 +69,9 @@ class robocoop:
 
         if top_sensor == 1 and bottom_sensor == 1:
             state = 'unknown'
-        elif top_sensor == 0:
+        elif top_sensor == 0 and bottom_sensor == 1:
             state = 'opened'
-        elif bottom_sensor == 0:
+        elif bottom_sensor == 0 and top_sensor == 1:
             state = 'closed'
         else:
             state = 'fubar'
@@ -70,23 +81,39 @@ class robocoop:
     def move_door(self, direction):
         self.get_door_state()
         if self.debug:
-            print('Coop %s is %s, going to %s the coop.' % (self.name, self.door_state, direction))
+            print('The %s door is %s, going to %s the coop.' % (self.name, self.door_state, direction))
 
-        run_time = 0
-        start_time = time.clock()
-        if direction == 'open':
-            while self.door_state != 'opened' and run_time < self.safety_limit:
-                self.motor_up()
+        #  Stupid english
+        desired_state = 'opened'
+        if direction == 'close':
+            desired_state = 'closed'
+
+        total_run_time = 0
+        validated_run = False
+        run_limit = self.safety_limit
+        while total_run_time < self.safety_limit and validated_run == False:
+            run_time = 0
+            start_time = time.clock()
+            while self.door_state != desired_state and run_time < run_limit:
+                self.motor_move(direction)
                 self.get_door_state()
                 run_time = time.clock() - start_time
-        elif direction == 'close':
-            while self.door_state != 'closed' and run_time < self.safety_limit:
-                self.motor_down()
-                self.get_door_state()
-                run_time = time.clock() - start_time
-        self.motor_off()
+            self.motor_off()
+            total_run_time += run_time
+            run_limit -= run_time
 
-        return_msg = 'Coop %s is now %s |%.2fs|' % (self.name, self.door_state, run_time)
+            if self.debug:
+                print('run=%s total=%s lim=%s ds=%s' % (run_time, total_run_time, run_limit, self.door_state))
+
+            # On hot days I get some noise on the sensors
+            # this does a fresh read on the sensors to validate the state of the door
+            self.cleanup()
+            self.init_gpio()
+            self.get_door_state()
+            if self.door_state == desired_state:
+                validated_run = True
+
+        return_msg = 'The %s door is now %s |%.2fs|' % (self.name, self.door_state, total_run_time)
         return return_msg
 
 
@@ -120,31 +147,30 @@ if __name__ == '__main__':
     status = 0
     for door in doors:
         try:
-            try:
-                obj = robocoop(door, config.getint(door, 'top_sensor_pin'),
-                               config.getint(door, 'bottom_sensor_pin'),
-                               config.getint(door, 'motor_a_pin'),
-                               config.getint(door, 'motor_b_pin'),
-                               config.getint(door, 'safety_limit'))
-            except:
-                print('No config found for door: %s' % door)
+            obj = robocoop(door, config.getint(door, 'top_sensor_pin'),
+                           config.getint(door, 'bottom_sensor_pin'),
+                           config.getint(door, 'motor_a_pin'),
+                           config.getint(door, 'motor_b_pin'),
+                           config.getint(door, 'safety_limit'),
+                           args.debug)
 
             if args.direction in ('open', 'close'):
-                resp = obj.move_door(args.direction, args.debug)
+                resp = obj.move_door(args.direction)
             elif args.direction == 'auto':
                 obj.get_door_state()
                 if obj.door_state == 'unknown':
-                    for x in range(1000):
-                        obj.get_door_state()
+                    obj.cleanup()
+                    obj.init_gpio()
+                    obj.get_door_state()
                 if obj.door_state == 'opened':
-                    resp = obj.move_door('close', args.debug)
+                    resp = obj.move_door('close')
                 elif obj.door_state == 'closed':
-                    resp = obj.move_door('open', args.debug)
+                    resp = obj.move_door('open')
                 else:
-                    resp = "Did not move door. Door state is %s" % door_state
+                    resp = "Did not move %s door, it is %s" % (obj.name, obj.door_state)
             else:
                 obj.get_door_state()
-                resp = 'The door is %s' % obj.door_state
+                resp = 'The %s door is %s' % (obj.name, obj.door_state)
 
             print(resp)
             if not args.debug:
@@ -156,6 +182,8 @@ if __name__ == '__main__':
                 send_notification(api_key, "Exception encountered")
             print("BOOM:", sys.exc_info())
         finally:
+            if args.debug:
+                print("|Cleaning up GPIO|")
             obj.cleanup()
 
     sys.exit(status)
