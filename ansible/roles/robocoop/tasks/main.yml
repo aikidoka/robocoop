@@ -19,7 +19,7 @@
     - httplib2
 
 - name: Pull down the repo
-  git: repo=https://github.com/beardymcbeards/robocoop.git
+  git: repo=https://github.com/aikidoka/robocoop.git
        dest={{ install_dir }}
 
 - name: Instantiate the config
@@ -77,5 +77,3 @@
       - robocoop-evening.timer
       - robocoop-update.timer
   tags: timers
-
-            

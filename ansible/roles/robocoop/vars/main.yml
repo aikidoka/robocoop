@@ -1,4 +1,4 @@
----    
+---
 install_dir: /opt/robocoop
 
 # Maximum time to run the door for in seconds
@@ -10,8 +10,8 @@ gpio_bottom_sensor_pin: 33
 gpio_motor_a_pin: 35
 gpio_motor_b_pin: 37
 
-# Where to pull the sun times for and potential adjustments 
-zipcode: 78163
+# Where to pull the sun times for and potential adjustments
+zipcode: 80220
 morning_nudge_minutes: 20
 evening_nudge_minutes: 30
 
