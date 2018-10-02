@@ -9,15 +9,15 @@ import ConfigParser
 
 def init_gpio():
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(config.getint('gpio', 'top_sensor_pin'), GPIO.IN)
-    GPIO.setup(config.getint('gpio', 'bottom_sensor_pin'), GPIO.IN)
+    GPIO.setup(config.getint('gpio', 'left_sensor_pin'), GPIO.IN)
+    GPIO.setup(config.getint('gpio', 'right_sensor_pin'), GPIO.IN)
 
 
 def get_sensor_state():
-    top_sensor = GPIO.input(config.getint('gpio', 'top_sensor_pin'))
-    bottom_sensor = GPIO.input(config.getint('gpio', 'bottom_sensor_pin'))
+    left_sensor = GPIO.input(config.getint('gpio', 'left_sensor_pin'))
+    right_sensor = GPIO.input(config.getint('gpio', 'right_sensor_pin'))
 
-    sensors = {'top': top_sensor, 'bottom': bottom_sensor}
+    sensors = {'left': left_sensor, 'right': right_sensor}
     return sensors
 
 

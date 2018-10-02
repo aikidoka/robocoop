@@ -3,15 +3,15 @@ pushbullet_api_key = <your key here>
 doors_to_open = frontdoor,sidedoor
 
 [frontdoor]
-top_sensor_pin = 31
-bottom_sensor_pin = 33
+left_sensor_pin = 31
+right_sensor_pin = 33
 motor_a_pin = 35
 motor_b_pin = 37
 safety_limit = 45
 
 [sidedoor]
-top_sensor_pin = 32
-bottom_sensor_pin = 36
+left_sensor_pin = 32
+right_sensor_pin = 36
 motor_a_pin = 38
 motor_b_pin = 40
 safety_limit = 30

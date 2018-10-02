@@ -14,11 +14,11 @@ from pushbullet import Pushbullet
 class robocoop:
     """Class for controlling a door"""
 
-    def __init__(self, door_name, top_pin, bottom_pin, motor_a_pin,
+    def __init__(self, door_name, left_pin, right_pin, motor_a_pin,
                  motor_b_pin, safety_limit, debug=False):
         self.name = door_name
-        self.top_sensor_pin = top_pin
-        self.bottom_sensor_pin = bottom_pin
+        self.left_sensor_pin = left_pin
+        self.right_sensor_pin = right_pin
         self.motor_a_pin = motor_a_pin
         self.motor_b_pin = motor_b_pin
         self.safety_limit = safety_limit
@@ -29,8 +29,8 @@ class robocoop:
 
     def init_gpio(self):
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.top_sensor_pin, GPIO.IN)
-        GPIO.setup(self.bottom_sensor_pin, GPIO.IN)
+        GPIO.setup(self.left_sensor_pin, GPIO.IN)
+        GPIO.setup(self.right_sensor_pin, GPIO.IN)
         GPIO.setup(self.motor_a_pin, GPIO.OUT)
         GPIO.setup(self.motor_b_pin, GPIO.OUT)
 
@@ -53,25 +53,25 @@ class robocoop:
             GPIO.output(self.motor_b_pin, True)
 
 
-    def motor_up(self):
+    def motor_left(self):
         GPIO.output(self.motor_a_pin, True)
         GPIO.output(self.motor_b_pin, False)
 
 
-    def motor_down(self):
+    def motor_right(self):
         GPIO.output(self.motor_a_pin, False)
         GPIO.output(self.motor_b_pin, True)
 
 
     def get_door_state(self):
-        top_sensor = GPIO.input(self.top_sensor_pin)
-        bottom_sensor = GPIO.input(self.bottom_sensor_pin)
+        left_sensor = GPIO.input(self.left_sensor_pin)
+        right_sensor = GPIO.input(self.right_sensor_pin)
 
-        if top_sensor == 1 and bottom_sensor == 1:
+        if left_sensor == 1 and right_sensor == 1:
             state = 'unknown'
-        elif top_sensor == 0 and bottom_sensor == 1:
+        elif left_sensor == 0 and right_sensor == 1:
             state = 'opened'
-        elif bottom_sensor == 0 and top_sensor == 1:
+        elif right_sensor == 0 and left_sensor == 1:
             state = 'closed'
         else:
             state = 'fubar'
@@ -147,8 +147,8 @@ if __name__ == '__main__':
     status = 0
     for door in doors:
         try:
-            obj = robocoop(door, config.getint(door, 'top_sensor_pin'),
-                           config.getint(door, 'bottom_sensor_pin'),
+            obj = robocoop(door, config.getint(door, 'left_sensor_pin'),
+                           config.getint(door, 'right_sensor_pin'),
                            config.getint(door, 'motor_a_pin'),
                            config.getint(door, 'motor_b_pin'),
                            config.getint(door, 'safety_limit'),

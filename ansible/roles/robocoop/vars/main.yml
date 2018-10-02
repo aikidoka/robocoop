@@ -5,8 +5,8 @@ install_dir: /opt/robocoop
 safety_limit: 45
 
 # GPIO Settings
-gpio_top_sensor_pin: 31
-gpio_bottom_sensor_pin: 33
+gpio_left_sensor_pin: 31
+gpio_right_sensor_pin: 33
 gpio_motor_a_pin: 35
 gpio_motor_b_pin: 37
 

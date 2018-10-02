@@ -23,15 +23,15 @@ if __name__ == '__main__':
     door = args.door[0]
 
     try:
-        obj = robocoop.robocoop(door, config.getint(door, 'top_sensor_pin'),
-                                config.getint(door, 'bottom_sensor_pin'),
+        obj = robocoop.robocoop(door, config.getint(door, 'left_sensor_pin'),
+                                config.getint(door, 'right_sensor_pin'),
                                 config.getint(door, 'motor_a_pin'),
                                 config.getint(door, 'motor_b_pin'),
                                 config.getint(door, 'safety_limit'))
 
 
-        toppin = config.getint(door, 'top_sensor_pin')
-        botpin = config.getint(door, 'bottom_sensor_pin')
+        toppin = config.getint(door, 'left_sensor_pin')
+        botpin = config.getint(door, 'right_sensor_pin')
         while True:
             print("TOP: %s" % robocoop.GPIO.input(toppin))
             print("BOTTOM: %s" % robocoop.GPIO.input(botpin))
