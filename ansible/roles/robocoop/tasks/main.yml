@@ -1,9 +1,10 @@
 ---
 - name: Ensure basic packages are there
-  apt: name={{ item }}
-          state=latest
-          update_cache=yes
-  with_items:
+  apt:
+   name: "{{ item }}"
+   update_cache: true
+   state: present
+    with_items:
     - gcc
     - git
     - ansible
