@@ -5,9 +5,9 @@
    update_cache: true
    state: present
     with_items:
-    - gcc
-    - git
-    - ansible
+    - 'gcc'
+    - 'git'
+    - 'ansible'
 
 - name: Ensure needed python libraries are installed
   pip: name={{ item }}
