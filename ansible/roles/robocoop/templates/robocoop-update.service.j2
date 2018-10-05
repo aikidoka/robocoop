@@ -4,5 +4,5 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=ansible-playbook -i inventory bootstrap.yml -t timers
+ExecStart={{ install_dir }}/ansible/ansible-playbook -i inventory bootstrap.yml -t timers
 WorkingDirectory={{ install_dir }}/ansible
