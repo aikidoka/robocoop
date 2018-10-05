@@ -11,7 +11,7 @@ import subprocess
 
 if __name__ == '__main__':
     config = ConfigParser.ConfigParser()
-    config.read('chicken_door.cfg')
+    config.read('robocoop.cfg')
     api_key = config.get('pushbullet', 'api_key')
     pb = Pushbullet(api_key)
 
