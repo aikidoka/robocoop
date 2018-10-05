@@ -1,6 +1,6 @@
 ---
 - name: Ensure basic packages are there
-  pacman: name={{ item }}
+  apt: name={{ item }}
           state=latest
           update_cache=yes
   with_items:
