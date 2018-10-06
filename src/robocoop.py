@@ -137,7 +137,7 @@ if __name__ == '__main__':
     args, __ = parser.parse_known_args()
 
     config = ConfigParser.ConfigParser()
-    config.read('./robocoop.cfg')
+    config.read('{{ install_dir }}/robocoop.cfg')
     api_key = config.get('DEFAULT', 'pushbullet_api_key')
     if args.doors == 'NULL':
         doors = config.get('DEFAULT', 'doors_to_open').split(',')

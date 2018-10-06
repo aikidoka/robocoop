@@ -27,7 +27,11 @@
   template: src=robocoop.cfg.j2
             dest={{ install_dir }}/robocoop.cfg
 
-- name: Modify the motd for a happier wife
+- name: Instantiate the program file
+  template: src=robocoop.py.j2
+            dest={{ install_dir }}/robocoop.py
+
+- name: Modify the motd
   template: src=motd.j2
             dest=/etc/motd
 
