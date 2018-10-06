@@ -31,6 +31,10 @@
   template: src=robocoop.py.j2
             dest={{ install_dir }}/robocoop.py
 
+- name: Instantiate the poller file
+  template: src=poller.py.j2
+            dest={{ install_dir }}/poller.py
+
 - name: Modify the motd
   template: src=motd.j2
             dest=/etc/motd

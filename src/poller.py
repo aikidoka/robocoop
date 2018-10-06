@@ -23,7 +23,7 @@ def get_sensor_state():
 
 if __name__ == '__main__':
     config = ConfigParser.ConfigParser()
-    config.read('robocoop.cfg')
+    config.read('{{ install_dir }}/robocoop.cfg')
 
     try:
         init_gpio()
