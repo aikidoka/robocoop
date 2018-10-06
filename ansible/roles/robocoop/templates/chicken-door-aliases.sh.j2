@@ -1,6 +1,6 @@
-alias opendoor=`sh -c 'cd {{ install_dir }} && sudo /usr/bin/python2 {{ install_dir }}/robocoop.py --direction open'`
-alias closedoor=`sh -c 'cd {{ install_dir }} && sudo /usr/bin/python2 {{ install_dir }}/robocoop.py --direction close'`
-alias checkdoor=`sh -c 'cd {{ install_dir }} && sudo /usr/bin/python2 {{ install_dir }}/robocoop.py --debug'`
-alias next='systemctl list-timers robocoop* --all | grep robocoop | cut -f3 -d" " | cut -f1-2 -d: | sort'
+alias opendoor='sudo /usr/bin/python2 {{ install_dir }}/robocoop.py --direction open'
+alias closedoor='sudo /usr/bin/python2 {{ install_dir }}/robocoop.py --direction close'
+alias checkdoor='sudo /usr/bin/python2 {{ install_dir }}/robocoop.py --debug'
+alias next='systemctl list-timers robocoop* | grep robocoop | cut -f3 -d" " | cut -f1-2 -d: | sort'
 alias opentime='systemctl list-timers robocoop-morning.timer | grep robocoop | cut -f3 -d" " | cut -f1-2 -d:'
 alias closetime='systemctl list-timers robocoop-evening.timer | grep robocoop | cut -f3 -d" " | cut -f1-2 -d:'
