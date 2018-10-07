@@ -6,7 +6,8 @@
    state: present
 
 - name: Ensure needed python libraries are installed
-  pip: name=['pushbullet.py', 'RPi.GPIO', 'httplib2']
+  pip:
+   name: ['pushbullet.py', 'RPi.GPIO', 'httplib2']
        state=latest
        executable=pip2
        extra_args='--exists-action=w'
