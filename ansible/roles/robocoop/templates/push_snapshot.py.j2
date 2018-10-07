@@ -12,7 +12,7 @@ import subprocess
 if __name__ == '__main__':
     config = ConfigParser.ConfigParser()
     config.read('{{ install_dir }}/robocoop.cfg')
-    api_key = config.get('pushbullet', 'api_key')
+    api_key = config.get('DEFAULT', 'pushbullet_api_key')
     pb = Pushbullet(api_key)
 
     try:
