@@ -8,9 +8,9 @@
 - name: Ensure needed python libraries are installed
   pip:
    name: ['pushbullet.py', 'RPi.GPIO', 'httplib2']
-       state: latest
-       executable: pip2
-       extra_args: '--exists-action=w'
+   state: latest
+   executable: pip2
+   extra_args: '--exists-action=w'
 
 - name: Pull down the repo
   git: repo=https://github.com/aikidoka/robocoop.git
