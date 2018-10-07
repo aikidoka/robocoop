@@ -18,7 +18,7 @@ if __name__ == '__main__':
     args, __ = parser.parse_known_args()
 
     config = ConfigParser.ConfigParser()
-    config.read('robocoop.cfg')
+    config.read('{{ install_dir }}/robocoop.cfg')
 
     door = args.door[0]
 
