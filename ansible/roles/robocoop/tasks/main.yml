@@ -1,23 +1,15 @@
 ---
 - name: Ensure basic packages are there
   apt:
-   name: "{{ item }}"
+   name: ['gcc', 'git', 'ansible']
    update_cache: true
    state: present
-  with_items:
-    - 'gcc'
-    - 'git'
-    - 'ansible'
 
 - name: Ensure needed python libraries are installed
-  pip: name={{ item }}
+  pip: name=['pushbullet.py', 'RPi.GPIO', 'httplib2']
        state=latest
        executable=pip2
        extra_args='--exists-action=w'
-  with_items:
-    - pushbullet.py
-    - RPi.GPIO
-    - httplib2
 
 - name: Pull down the repo
   git: repo=https://github.com/aikidoka/robocoop.git
