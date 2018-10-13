@@ -2,13 +2,14 @@
 install_dir: /opt/robocoop
 
 # Maximum time to run the door for in seconds
-safety_limit: 45
+safety_limit: 30
 
 # GPIO Settings
 gpio_left_sensor_pin: 31
 gpio_right_sensor_pin: 33
 gpio_motor_a_pin: 35
 gpio_motor_b_pin: 37
+outside_switch: 40
 
 # Where to pull the sun times for and potential adjustments
 zipcode: 80220

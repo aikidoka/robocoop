@@ -7,6 +7,8 @@ import time
 import argparse
 import ConfigParser
 
+import snapshot
+
 import RPi.GPIO as GPIO
 from pushbullet import Pushbullet
 
@@ -74,7 +76,7 @@ class robocoop:
         elif right_sensor == 0 and left_sensor == 1:
             state = 'closed'
         else:
-            state = 'fubar'
+            state = 'non-functional'
         self.door_state = state
 
 

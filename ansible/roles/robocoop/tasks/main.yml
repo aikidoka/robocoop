@@ -28,6 +28,14 @@
   template: src=poller.py.j2
             dest={{ install_dir }}/poller.py
 
+- name: Instantiate the snapshot file
+  template: src=snapshot.py.j2
+            dest={{ install_dir }}/snapshot.py
+
+- name: Instantiate the sensor debug file
+  template: src=sensordebug.py.j2
+            dest={{ install_dir }}/sensordebug.py
+
 - name: Modify the motd
   template: src=motd.j2
             dest=/etc/motd
