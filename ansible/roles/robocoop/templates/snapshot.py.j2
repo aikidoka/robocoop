@@ -9,7 +9,7 @@ from picamera import PiCamera
 fileName = "/tmp/coop.jpg"
 
 def takepic():
-camera = PiCamera(resolution=(1920, 1200), framerate=30)
+	camera = PiCamera(resolution=(1920, 1200), framerate=30)
 camera.iso = 800
 camera.vflip = True
 camera.hflip = True
