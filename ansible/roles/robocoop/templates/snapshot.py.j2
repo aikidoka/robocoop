@@ -31,10 +31,10 @@ def takepic():
 	camera.stop_preview()
 
 def send_notification(api_key, message):
-    pb = Pushbullet(api_key)
-    my_channel = pb.channels[0]
-    pushN = my_channel.push_note('RoboCoop', message)
-    #pb.push_note('Chicken Door', message)
+	pb = Pushbullet(api_key)
+	my_channel = pb.channels[0]
+	pushN = my_channel.push_note('RoboCoop', message)
+	#pb.push_note('Chicken Door', message)
 	with open(fileName, "rb") as pic:
 	    file_data = pb.upload_file(pic, "coop.jpg", file_type="image/jpeg")
 	pushF = my_channel.push_file(**file_data)
@@ -50,5 +50,5 @@ if __name__ == '__main__':
 		time.sleep(2)
 		#resp = "testing this" #placeholder for message for testing
 		send_notification(api_key, message)
-    except:
-        print "BOOM:", sys.exc_info()
+	except:
+		print "BOOM:", sys.exc_info()
