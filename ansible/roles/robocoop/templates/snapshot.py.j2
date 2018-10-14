@@ -9,26 +9,26 @@ from picamera import PiCamera
 fileName = "/tmp/coop.jpg"
 
 def takepic():
-        camera = PiCamera(resolution=(1920, 1200), framerate=30)
-		camera.iso = 800
-		camera.vflip = True
-		camera.hflip = True
-		# Turn the camera's LED on
-		camera.led = True
-        camera.start_preview()
-		# Camera warm-up time
-        time.sleep(5)
-		# Now fix the values
-		camera.shutter_speed = camera.exposure_speed
-		camera.exposure_mode = 'off'
-		g = camera.awb_gains
-		camera.awb_mode = 'off'
-		camera.awb_gains = g
-		camera.shutter_speed = 6000000
-		camera.annotate_text = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-		time.sleep(20)
-        camera.capture(fileName)
-        camera.stop_preview()
+	camera = PiCamera(resolution=(1920, 1200), framerate=30)
+	camera.iso = 800
+	camera.vflip = True
+	camera.hflip = True
+	# Turn the camera's LED on
+	camera.led = True
+	camera.start_preview()
+	# Camera warm-up time
+	time.sleep(5)
+	# Now fix the values
+	camera.shutter_speed = camera.exposure_speed
+	camera.exposure_mode = 'off'
+	g = camera.awb_gains
+	camera.awb_mode = 'off'
+	camera.awb_gains = g
+	camera.shutter_speed = 6000000
+	camera.annotate_text = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	time.sleep(20)
+	camera.capture(fileName)
+	camera.stop_preview()
 
 def send_notification(api_key, message):
     pb = Pushbullet(api_key)
