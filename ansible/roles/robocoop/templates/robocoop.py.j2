@@ -169,7 +169,7 @@ if __name__ == '__main__':
                 elif obj.door_state == 'closed':
                     resp = obj.move_door('open')
                 else:
-                    resp = "Did not move %s door, it is %s" % (obj.name, obj.door_state)
+                    resp = "Did not move the %s door, it is %s" % (obj.name, obj.door_state)
             else:
                 obj.get_door_state()
                 resp = 'The %s door is %s' % (obj.name, obj.door_state)
